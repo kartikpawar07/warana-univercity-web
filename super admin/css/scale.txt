@@ -1,0 +1,40 @@
+import sys
+import re
+
+def scale_value(match):
+    num_str = match.group(1)
+    unit = match.group(2)
+    val = float(num_str)
+    
+    # Do not scale 0
+    if val == 0:
+        return f"0{unit}"
+        
+    val = val * 0.75
+    
+    if val.is_integer():
+        return f"{int(val)}{unit}"
+    else:
+        return f"{val:g}{unit}"
+
+def process_file(filepath):
+    print(f"Processing {filepath}...")
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    # Safe regex to scale inline numbers with px or rem
+    content = re.sub(r'\b(\d+(?:\.\d+)?)(px|rem)\b', scale_value, content)
+
+    # Inject a scaled font-size onto the headers
+    content = content.replace('<h2 style="margin: 0; color: #333;">', '<h2 style="margin: 0; color: #333; font-size: 1.125rem;">')
+    
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print("Done.")
+
+try:
+    process_file(r'd:\Warana University\pages\student_registration.php')
+    process_file(r'd:\Warana University\pages\eligibility_registration.php')
+    process_file(r'd:\Warana University\js\table.js')
+except Exception as e:
+    print(f"Error: {e}")

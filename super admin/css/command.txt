@@ -1,0 +1,46 @@
+python -c "
+import re
+import os
+
+files = [
+    r'd:\Warana University\css\global.css',
+    r'd:\Warana University\css\form.css',
+    r'd:\Warana University\css\login.css',
+    r'd:\Warana University\index.php'
+]
+
+def scale_match(m):
+    val_str = m.group(1)
+    unit = m.group(2)
+    val = float(val_str)
+    if val == 0 or (abs(val) == 1 and unit == 'px'):
+        return m.group(0)
+    new_val = val * 0.75
+    new_str = '{:.3f}'.format(new_val).rstrip('0').rstrip('.')
+    if new_str == '' or new_str == '-':
+        new_str = '0'
+    return f'{new_str}{unit}'
+
+for file_path in files:
+    if not os.path.exists(file_path):
+        print(f'File not found: {file_path}')
+        continue
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    lines = content.split('\n')
+    new_lines = []
+    for line in lines:
+        if '@media' in line:
+            new_lines.append(line)
+        else:
+            new_line = re.sub(r'([+-]?(?:\d*\.)?\d+)(px|rem|em)\b', scale_match, line)
+            new_lines.append(new_line)
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(new_lines))
+    print(f'Processed {file_path}')
+
+print('Script Complete')
+"
